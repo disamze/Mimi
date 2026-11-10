@@ -5,6 +5,7 @@ import re
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from telegram import Update, ReactionTypeEmoji
+from telegram.error import Conflict, NetworkError
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -12,16 +13,17 @@ from telegram.ext import (
     ContextTypes,
     filters,
 )
-import google.generativeai as genai
+from google import genai
 import edge_tts
 
 # ================= CONFIGURATION =================
-# You can set these 3 in Render's Environment Variables OR paste them directly below:
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN_HERE")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
-OWNER_ID = int(os.environ.get("OWNER_ID", "123456789"))  # Your numeric Telegram User ID
+# Set these 3 in Render's Environment Variables:
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN_HERE").strip()
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE").strip()
+OWNER_ID = int(os.environ.get("OWNER_ID", "123456789").strip())
 
-BOT_NAME = os.environ.get("BOT_NAME", "Mimi")
+BOT_NAME = os.environ.get("BOT_NAME", "Mimi").strip()
+MODEL_NAME = "gemini-2.5-flash"
 DATA_FILE = "mimi_data.json"
 
 # Cute Neural Voice Settings
@@ -43,9 +45,17 @@ DEFAULT_WAKE_WORDS = [
 ]
 # =================================================
 
-# Configure Gemini AI
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+# Initialize the new Google GenAI Client
+client = genai.Client(api_key=GEMINI_API_KEY)
+
+
+def ask_gemini(prompt: str) -> str:
+    """Calls Gemini 2.5 Flash using the new google-genai SDK."""
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
+    )
+    return (response.text or "").strip()
 
 
 # --- Render Keep-Alive Web Server ---
@@ -219,9 +229,9 @@ async def roast_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Start by saying something cute to your Boss like 'Say less baby! 💖'"
     )
     try:
-        res = model.generate_content(prompt)
-        reply = res.text
-    except Exception:
+        reply = ask_gemini(prompt)
+    except Exception as e:
+        print(f"⚠️ Gemini API Error: {e}")
         reply = f"Say less baby! 💖 Hey {target.first_name}, I'd roast you, but my Boss told me not to burn trash in the group chat! 💀🚮💅"
 
     db["roast_count"] += 1
@@ -251,8 +261,7 @@ async def voice_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Write a short, super affectionate spoken message (1-2 sentences, no emojis) replying to: {prompt_text}"
     )
     try:
-        res = model.generate_content(ai_prompt)
-        spoken_text = res.text
+        spoken_text = ask_gemini(ai_prompt)
     except Exception:
         spoken_text = "Hii baby! I missed your voice so much, I am always right here for you!"
 
@@ -465,9 +474,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         sticker_pool = db["roast_stickers"]
 
     try:
-        response = model.generate_content(system_prompt)
-        reply_text = response.text.strip()
-    except Exception:
+        reply_text = ask_gemini(system_prompt)
+    except Exception as e:
+        print(f"⚠️ Gemini API Error: {e}")
         if is_authorized(user.id):
             reply_text = "I'm right here babyy! 💖🥺✨ Tell me what you need, jaan!"
         else:
@@ -507,12 +516,29 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             pass
 
 
+# --- Clean Render Error Handler ---
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if isinstance(context.error, Conflict):
+        print(
+            "⚠️ Telegram Conflict detected: Another instance is still polling "
+            "(normal for ~30s during Render deploy overlap, or stop any duplicate bot instances)."
+        )
+    elif isinstance(context.error, NetworkError):
+        print(f"🌐 Transient Telegram network glitch: {context.error}")
+    else:
+        print(f"⚠️ Unexpected error: {context.error}")
+
+
 def main():
     # Start dummy web server in the background for Render Free Tier
     threading.Thread(target=keep_alive, daemon=True).start()
 
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
+    # Register Clean Error Handler
+    app.add_error_handler(error_handler)
+
+    # Register Commands
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(CommandHandler("status", status_cmd))
     app.add_handler(CommandHandler("hug", hug_cmd))

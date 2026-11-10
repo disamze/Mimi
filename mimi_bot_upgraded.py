@@ -7,6 +7,9 @@ import re
 import shutil
 import subprocess
 import threading
+from groq import AsyncGroq
+
+
 
 from pathlib import Path
 from typing import Any
@@ -45,6 +48,14 @@ MODEL_NAME = os.getenv(
 
 DATA_FILE = Path(
     os.getenv("DATA_FILE", "mimi_data.json")
+)
+groq_client = AsyncGroq(
+    api_key=os.getenv("GROQ_API_KEY")
+)
+
+GROQ_MODEL = os.getenv(
+    "GROQ_MODEL",
+    "openai/gpt-oss-120b"
 )
 
 USE_GOOGLE_SEARCH = os.getenv(
@@ -268,39 +279,50 @@ async def ask_gemini(
     history=None,
     personality=None
 ):
-
     history = history or []
 
-    contents = []
+    messages = []
 
+    # Mimi's personality
+    if personality:
+        messages.append({
+            "role": "system",
+            "content": str(personality)
+        })
+
+    # Previous conversation
     for item in history[-MAX_HISTORY_MESSAGES:]:
-
         role = item.get("role", "user")
         text = item.get("text", "")
 
-        if text:
+        if not text:
+            continue
 
-            contents.append(
-                types.Content(
-                    role=(
-                        "model"
-                        if role == "model"
-                        else "user"
-                    ),
-                    parts=[
-                        types.Part.from_text(text=text)
-                    ]
-                )
-            )
+        messages.append({
+            "role": (
+                "assistant"
+                if role in ("model", "assistant")
+                else "user"
+            ),
+            "content": str(text)
+        })
 
-    contents.append(
-        types.Content(
-            role="user",
-            parts=[
-                types.Part.from_text(text=prompt)
-            ]
-        )
+    # Current message
+    messages.append({
+        "role": "user",
+        "content": str(prompt)
+    })
+
+    # Ask Groq
+    response = await groq_client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=messages,
+        max_completion_tokens=1024
     )
+
+    answer = response.choices[0].message.content
+
+    return (answer or "").strip()
 
     config_args = {
         "system_instruction": personality or (

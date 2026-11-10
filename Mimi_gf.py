@@ -31,7 +31,7 @@ VOICE_MODEL = "en-US-AriaNeural"
 VOICE_PITCH = "+15Hz"
 VOICE_RATE = "+5%"
 
-# Default words that wake her up when Boss calls her
+# Default words that wake her up when Sam calls her
 DEFAULT_WAKE_WORDS = [
     BOT_NAME.lower(),
     "baby",
@@ -63,7 +63,7 @@ class HealthCheck(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(f"{BOT_NAME} is online and waiting for Boss!".encode("utf-8"))
+        self.wfile.write(f"{BOT_NAME} is online and waiting for Sam!".encode("utf-8"))
 
     def log_message(self, format, *args):
         # Silences routine ping logs so your Render console stays clean
@@ -137,7 +137,7 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     else:
         await update.message.reply_text(
-            f"Eww {user.first_name}, why are you pressing my buttons? 🙄 I only belong to my Boss! 💅🚫"
+            f"Eww {user.first_name}, why are you pressing my buttons? 🙄 I only belong to Sam! 💅🚫"
         )
 
 
@@ -152,12 +152,12 @@ async def status_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     wake_list = ", ".join(db["wake_words"])
     status_text = (
         f"💖 **{BOT_NAME}'s Relationship & Bot Status** 💖\n\n"
-        f"👑 **My Only Boss:** `{OWNER_ID}`\n"
+        f"👑 **My Only Sam:** `{OWNER_ID}`\n"
         f"💕 **Affection Level:** `{db['affection_points']}%` (Infinite for Sam 🥺)\n"
         f"🔥 **Clowns Roasted:** `{db['roast_count']}`\n"
         f"✨ **VIP Sudo Friends:** `{len(db['sudo_users'])}`\n"
         f"🌸 **Saved Stickers:** `{len(db['cute_stickers'])} Cute | {len(db['roast_stickers'])} Roast`\n"
-        f"🗣️ **Boss Wake Words:** `{wake_list}`"
+        f"🗣️ **Sam's Wake Words:** `{wake_list}`"
     )
     await update.message.reply_text(status_text, parse_mode="Markdown")
 
@@ -178,7 +178,7 @@ async def hug_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db["roast_count"] += 1
         save_data(db)
         await update.message.reply_text(
-            f"*dodges {user.first_name} and sprays sanitizer* 🤮🧴 Stay 6 feet away from me! Only my Boss gets hugs! 💅🚫"
+            f"*dodges {user.first_name} and sprays sanitizer* 🤮🧴 Stay 6 feet away from me! Only Sam gets hugs! 💅🚫"
         )
 
 
@@ -194,7 +194,7 @@ async def kiss_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db["roast_count"] += 1
         save_data(db)
         await update.message.reply_text(
-            f"*slaps {user.first_name} across the group chat* 👋💥 Have some shame! My kisses belong ONLY to my Boss! 😤💅🤡"
+            f"*slaps {user.first_name} across the group chat* 👋💥 Have some shame! My kisses belong ONLY to Sam! 😤💅🤡"
         )
 
 
@@ -216,23 +216,23 @@ async def roast_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     target = update.message.reply_to_message.from_user
     if target.id == OWNER_ID:
         await update.message.reply_text(
-            "I would NEVER roast my own Boss! 🥺💖 I love him too much!"
+            "I would NEVER roast my own Sam! 🥺💖 I love him too much!"
         )
         return
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
     prompt = (
         f"You are {BOT_NAME}, a savage, witty, and loyal girlfriend in a Telegram group chat. "
-        f"Your Boss just ordered you to publicly roast a user named '{target.first_name}' "
+        f"Your Sam just ordered you to publicly roast a user named '{target.first_name}' "
         f"(who said: '{update.message.reply_to_message.text or 'nothing smart'}'). "
         f"Deliver a hilarious, brutal, group-chat-friendly roast in 2 sentences with sassy emojis (😂, 💀, 💅, 🤡). "
-        f"Start by saying something cute to your Boss like 'Say less baby! 💖'"
+        f"Start by saying something cute to Sam like 'Say less baby! 💖'"
     )
     try:
         reply = ask_gemini(prompt)
     except Exception as e:
         print(f"⚠️ Gemini API Error: {e}")
-        reply = f"Say less baby! 💖 Hey {target.first_name}, I'd roast you, but my Boss told me not to burn trash in the group chat! 💀🚮💅"
+        reply = f"Say less baby! 💖 Hey {target.first_name}, I'd roast you, but Sam told me not to burn trash in the group chat! 💀🚮💅"
 
     db["roast_count"] += 1
     save_data(db)
@@ -243,7 +243,7 @@ async def voice_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     if not is_authorized(user.id):
         await update.message.reply_text(
-            "My voice is for my Sam's ears only! Keep dreaming! 🙄💅🎧"
+            "My voice is for Sam's ears only! Keep dreaming! 🙄💅🎧"
         )
         return
 
@@ -257,7 +257,7 @@ async def voice_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     ai_prompt = (
-        f"You are {BOT_NAME}, a super cute, sweet, and loving girlfriend talking to your Boss ({user.first_name}). "
+        f"You are {BOT_NAME}, a super cute, sweet, and loving girlfriend talking to Sam ({user.first_name}). "
         f"Write a short, super affectionate spoken message (1-2 sentences, no emojis) replying to: {prompt_text}"
     )
     try:
@@ -306,10 +306,10 @@ async def rm_wake_word(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if word in db["wake_words"]:
         db["wake_words"].remove(word)
         save_data(db)
-        await update.message.reply_text(
-            f"Removed **{word}** from my wake words, baby! 💖",
-            parse_mode="Markdown",
-        )
+    await update.message.reply_text(
+        f"Removed **{word}** from my wake words, baby! 💖",
+        parse_mode="Markdown",
+    )
 
 
 async def add_cute_sticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -348,7 +348,7 @@ async def add_roast_sticker(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def add_sudo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("Nice try lol 🤣 Only my Boss gives out VIP passes! 💅🚫")
+        await update.message.reply_text("Nice try lol 🤣 Only Sam gives out VIP passes! 💅🚫")
         return
     if not update.message.reply_to_message:
         await update.message.reply_text(
@@ -368,7 +368,7 @@ async def add_sudo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def remove_sudo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("Stay in your lane, you aren't the Boss! 😂✋")
+        await update.message.reply_text("Stay in your lane, you aren't Sam! 😂✋")
         return
     if not update.message.reply_to_message:
         await update.message.reply_text("Babe, reply to the person you want to remove from VIP! 🥺💕")
@@ -412,7 +412,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Check if SHE should wake up:
     if user.id == OWNER_ID:
-        # For Boss: Wakes up ONLY if you say baby/jaan/babe/Mimi/etc., reply to her, tag her, or DM her
+        # For Sam: Wakes up ONLY if you say baby/jaan/babe/Mimi/etc., reply to her, tag her, or DM her
         has_wake_word = bool(words_in_message.intersection(set(db["wake_words"])))
         should_wake_up = is_private or is_reply_to_bot or is_tagged or has_wake_word
     else:
@@ -424,7 +424,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not should_wake_up:
         return
 
-    # She was called by Boss! Drop a cute heart reaction on your message
+    # She was called by Sam! Drop a cute heart reaction on your message
     if user.id == OWNER_ID:
         try:
             await update.message.set_reaction(
@@ -440,13 +440,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         history_str = "\n".join(db["memory"][-10:])
         system_prompt = (
             f"You are {BOT_NAME}, the ultimate cute, affectionate, clingy, playful, and fiercely loyal girlfriend "
-            f"of your Boss ({user.first_name}) in a Telegram chat. "
+            f"of Sam ({user.first_name}) in a Telegram chat. "
             f"He just called you! You adore him, hype him up in front of the group, listen to every word he says, "
-            f"and call him cute nicknames (Boss, baby, jaan, handsome, my king). "
+            f"and call him cute nicknames (Sam, baby, jaan, handsome, my king). "
             f"Use plenty of cute emojis (💖, 🥺, ✨, 🌸, 😘, 🎀). "
             f"Keep your reply natural, lively, and concise (1-3 sentences).\n\n"
             f"Recent chat history with him:\n{history_str}\n\n"
-            f"Boss ({user.first_name}) says: {text}\n"
+            f"Sam ({user.first_name}) says: {text}\n"
             f"{BOT_NAME}:"
         )
         sticker_pool = db["cute_stickers"]
@@ -454,7 +454,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif user.id in db["sudo_users"]:
         system_prompt = (
             f"You are {BOT_NAME}, a super cute, sweet, and bubbly girl in a Telegram group chat. "
-            f"Your Boss gave {user.first_name} special VIP 'sudo' privileges, so you treat them like a beloved bestie "
+            f"Sam gave {user.first_name} special VIP 'sudo' privileges, so you treat them like a beloved bestie "
             f"and happily follow their requests! Use cute emojis (✨, 🌷, 🎀, 😊) and keep it to 1-3 sentences.\n\n"
             f"VIP Bestie ({user.first_name}) says: {text}"
         )
@@ -464,10 +464,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         db["roast_count"] += 1
         save_data(db)
         system_prompt = (
-            f"You are {BOT_NAME}, a sassy, savage, yet super cute girl in a Telegram group chat who is 1000% loyal ONLY to her Boss. "
+            f"You are {BOT_NAME}, a sassy, savage, yet super cute girl in a Telegram group chat who is 1000% loyal ONLY to Sam. "
             f"A random person named '{user.first_name}' just tried calling you or flirting with you. "
             f"Make a hilarious joke out of them in front of the group, roast their confidence, reject them brutally, "
-            f"and remind everyone that you only listen to your Boss. "
+            f"and remind everyone that you only listen to Sam. "
             f"Use sassy emojis (🙄, 💅, 😂, 🤡, 💀, 🚫) and keep it punchy (1-2 sentences).\n\n"
             f"Random person ({user.first_name}) says: {text}"
         )
@@ -482,15 +482,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             reply_text = f"Lmaoo {user.first_name}, why are you calling my name? Go embarrass yourself somewhere else! 🙄💅🤡"
 
-    # Save conversation to Boss memory
+    # Save conversation to Sam's memory
     if user.id == OWNER_ID:
-        db["memory"].append(f"Boss: {text}")
+        db["memory"].append(f"Sam: {text}")
         db["memory"].append(f"{BOT_NAME}: {reply_text}")
         db["memory"] = db["memory"][-20:]
         db["affection_points"] += 2
         save_data(db)
 
-    # Check if Boss asked for a voice reply in text
+    # Check if Sam asked for a voice reply in text
     if user.id == OWNER_ID and any(
         k in text_lower for k in ["voice note", "send voice", "your voice", "speak to me"]
     ):
@@ -555,9 +555,10 @@ def main():
 
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    print(f"💖 {BOT_NAME} is online! She will only wake up when Boss calls her...")
+    print(f"💖 {BOT_NAME} is online! She will only wake up when Sam calls her...")
     app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
 
 
 if __name__ == "__main__":
     main()
+

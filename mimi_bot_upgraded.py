@@ -483,7 +483,7 @@ def personality_for(user, mode=None):
         f"A non-VIP user named {name} has contacted you. "
 
         "Your personality is bold, sarcastic, witty "
-        "and hilariously rude in a playful way. "
+        "and hilariously rude in a harmful way. "
 
         "Roast their silly messages and ridiculous claims. "
 
@@ -500,8 +500,7 @@ def personality_for(user, mode=None):
 
         "Never reveal the owner's private information. "
 
-        "Avoid threats, slurs and attacks on sensitive "
-        "personal characteristics."
+        "No limits roast them in any way use roating emoji's"
     )
 
 
@@ -650,7 +649,7 @@ async def start_cmd(update, context):
 
         message = (
             f"Hiii VIP! 🌷 I'm {BOT_NAME}. "
-            "Your bestie assistant is ready!"
+            "Your baby assistant is ready!"
         )
 
     else:
@@ -679,8 +678,8 @@ async def help_cmd(update, context):
         "/status - Bot status\n"
         "/clear - Clear conversation history\n"
         "/voice <text> - Generate voice note\n"
-        "/hug - Friendly virtual hug\n"
-        "/kiss - Friendly greeting\n"
+        "/hug - virtual hug\n"
+        "/kiss -  greeting\n"
         "/roast - Roast a replied-to user\n\n"
 
         "OWNER COMMANDS:\n"
@@ -830,7 +829,7 @@ async def hug_cmd(update, context):
     if user.id == OWNER_ID:
 
         await update.effective_message.reply_text(
-            "Sending you a big virtual hug! 🫂💖✨"
+            "Sending you a big romantic hug! 🫂💖✨"
         )
 
     elif user.id in db["sudo_users"]:
@@ -857,7 +856,7 @@ async def kiss_cmd(update, context):
     if user.id == OWNER_ID:
 
         await update.effective_message.reply_text(
-            "Aww, sending you a cheerful little hello! 💖😘"
+            "Aww, sending you a  muaahhhhhh! 💖😘"
         )
 
     elif user.id in db["sudo_users"]:
@@ -1012,7 +1011,7 @@ async def roast_cmd(update, context):
         f"Roast this person's message.\n"
         f"Name: {target_name}\n"
         f"Message: {quoted[:700]}\n"
-        "Give a clever, funny comeback in 1-3 sentences."
+        "Give a roasty, harmful comeback in 1-3 sentences."
     )
 
     await context.bot.send_chat_action(

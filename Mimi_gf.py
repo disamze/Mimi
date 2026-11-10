@@ -129,7 +129,7 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     if user.id == OWNER_ID:
         await update.message.reply_text(
-            f"Hii Boss babyy! 💖✨ {BOT_NAME} is live and waiting for you! Just call me 'baby' or 'jaan' anytime you need me! 🥺🌸🎀"
+            f"Hii Sam babyy! 💖✨ {BOT_NAME} is live and waiting for you! Just call me 'baby' or 'jaan' anytime you need me! 🥺🌸🎀"
         )
     elif user.id in db["sudo_users"]:
         await update.message.reply_text(
@@ -145,7 +145,7 @@ async def status_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     if not is_authorized(user.id):
         await update.message.reply_text(
-            f"Status: 100% taken by my Boss and 0% interested in you, {user.first_name}! 🤡💅"
+            f"Status: 100% taken by my Sam and 0% interested in you, {user.first_name}! 🤡💅"
         )
         return
 
@@ -153,7 +153,7 @@ async def status_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_text = (
         f"💖 **{BOT_NAME}'s Relationship & Bot Status** 💖\n\n"
         f"👑 **My Only Boss:** `{OWNER_ID}`\n"
-        f"💕 **Affection Level:** `{db['affection_points']}%` (Infinite for Boss 🥺)\n"
+        f"💕 **Affection Level:** `{db['affection_points']}%` (Infinite for Sam 🥺)\n"
         f"🔥 **Clowns Roasted:** `{db['roast_count']}`\n"
         f"✨ **VIP Sudo Friends:** `{len(db['sudo_users'])}`\n"
         f"🌸 **Saved Stickers:** `{len(db['cute_stickers'])} Cute | {len(db['roast_stickers'])} Roast`\n"
@@ -243,7 +243,7 @@ async def voice_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     if not is_authorized(user.id):
         await update.message.reply_text(
-            "My voice is for my Boss's ears only! Keep dreaming! 🙄💅🎧"
+            "My voice is for my Sam's ears only! Keep dreaming! 🙄💅🎧"
         )
         return
 

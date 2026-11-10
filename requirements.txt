@@ -1,0 +1,6 @@
+TELEGRAM_BOT_TOKEN=your_bot_token
+GEMINI_API_KEY=your_gemini_key
+OWNER_ID=your_telegram_id
+BOT_NAME=Mimi
+GEMINI_MODEL=gemini-2.5-flash
+USE_GOOGLE_SEARCH=true
